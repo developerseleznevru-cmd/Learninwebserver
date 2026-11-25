@@ -1,0 +1,159 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   ДИЗАЙН-СИСТЕМА «CodePulse» — неоновый кибер-стиль
+   Все кастомные цвета/шрифты объявлены здесь → они автоматически
+   становятся утилитами Tailwind (bg-void, font-display и т.д.)
+   ============================================================ */
+@theme {
+  /* Глубокий космический фон */
+  --color-void: #080811;
+
+  /* Неоновые акценты (hex из ТЗ) */
+  --color-neon-html: #ff5722;
+  --color-neon-css: #00d2ff;
+  --color-neon-js: #ffe600;
+  --color-neon-python: #00ff88;
+  --color-neon-react: #bd00ff;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-void);
+    color: #cbd5e1;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(0, 210, 255, 0.35);
+    color: #fff;
+  }
+
+  /* Тонкий неоновый скроллбар */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #080811;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 8px;
+    border: 2px solid #080811;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}
+
+/* ============================================================
+   КАСТОМНЫЕ НЕОН-УТИЛИТЫ
+   Карточка задаёт CSS-переменную --glow-rgb (например "0,210,255"),
+   а эти классы «потребляют» её → свечение = фирменный цвет языка.
+   ============================================================ */
+
+/* Карточка с языком: при наведении поднимается и загорается цветом курса */
+.neon-card {
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    background-color 0.35s ease;
+}
+.neon-card:hover {
+  border-color: rgba(var(--glow-rgb), 0.85);
+  box-shadow:
+    0 0 22px rgba(var(--glow-rgb), 0.35),
+    0 0 60px rgba(var(--glow-rgb), 0.12);
+}
+
+/* Кнопка действия внутри карточки */
+.neon-btn {
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+.neon-btn:hover {
+  background-color: rgba(var(--glow-rgb), 0.18);
+  box-shadow: 0 0 18px rgba(var(--glow-rgb), 0.45);
+  transform: translateY(-1px);
+}
+.neon-btn:active {
+  transform: translateY(0);
+}
+
+/* Светящийся текст (использует --glow-rgb или заданный цвет) */
+.glow-text {
+  text-shadow:
+    0 0 18px rgba(var(--glow-rgb, 0, 210, 255), 0.55),
+    0 0 42px rgba(var(--glow-rgb, 0, 210, 255), 0.25);
+}
+
+/* Пульсация логотипа */
+@keyframes logo-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px rgba(0, 210, 255, 0.55),
+      0 0 30px rgba(0, 210, 255, 0.25);
+    border-color: rgba(0, 210, 255, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(0, 210, 255, 0.9),
+      0 0 55px rgba(0, 210, 255, 0.45);
+    border-color: rgba(0, 210, 255, 1);
+  }
+}
+.logo-pulse {
+  animation: logo-pulse 2.6s ease-in-out infinite;
+}
+
+/* Мерцающая точка «онлайн» */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 10px currentColor;
+  }
+  50% {
+    opacity: 0.35;
+    box-shadow: none;
+  }
+}
+.blink-dot {
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   ФОНОВЫЕ ЭФФЕКТЫ
+   ============================================================ */
+
+/* Сетка-подложка («кибер-пространство») с растворением к краям */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 100%);
+}
+
+/* Размытые неоновые пятна на фоне */
+.glow-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(110px);
+  pointer-events: none;
+}
