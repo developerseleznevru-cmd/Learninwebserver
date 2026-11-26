@@ -2,36 +2,47 @@ import type { CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Zap } from 'lucide-react';
 import type { Language } from '../types';
-import ProgressBar from './ProgressBar';
+import LanguageIcon from './LanguageIcon';
 
 interface LanguageCardProps {
   language: Language;
   /** Порядок появления при монтировании (для каскадной анимации) */
   index?: number;
+  /** Открывает страницу соответствующего курса */
+  onStart: (id: string) => void;
 }
 
 /**
- * Карточка курса (HTML5, CSS3, JavaScript…).
+ * Карточка курса (Базовый уровень, Python, React…).
  *
  * Неон реализован через CSS-переменную `--glow-rgb`:
  *  - класс .neon-card (index.css) при hover светится фирменным цветом;
  *  - framer-motion поднимает карточку на -4px при наведении.
  */
-export default function LanguageCard({ language, index = 0 }: LanguageCardProps) {
+export default function LanguageCard({ language, index = 0, onStart }: LanguageCardProps) {
   const {
+    id,
     name,
     description,
     color,
     colorRGB,
     level,
-    icon: Icon,
-    progress,
     lessonsDone,
     lessonsTotal,
     xpReward,
   } = language;
 
+  const isComingSoon = lessonsTotal === 0;
   const isStarted = lessonsDone > 0;
+  const isCompleted = !isComingSoon && lessonsDone >= lessonsTotal;
+
+  const actionLabel = isComingSoon
+    ? 'Подробнее'
+    : isCompleted
+      ? 'Курс пройден'
+      : isStarted
+        ? 'Продолжить'
+        : 'Начать курс';
 
   return (
     <motion.article
@@ -62,7 +73,7 @@ export default function LanguageCard({ language, index = 0 }: LanguageCardProps)
             boxShadow: `0 0 20px ${color}55`,
           }}
         >
-          <Icon className="h-6 w-6" />
+          <LanguageIcon language={language} className="h-6 w-6" />
         </span>
         <span className="rounded-full border border-slate-700 bg-slate-800/70 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-slate-300 uppercase">
           {level}
@@ -73,18 +84,12 @@ export default function LanguageCard({ language, index = 0 }: LanguageCardProps)
       <h3 className="relative mt-4 font-display text-xl font-bold text-white">{name}</h3>
       <p className="relative mt-2 flex-1 text-sm leading-relaxed text-slate-400">{description}</p>
 
-      {/* Прогресс курса */}
-      <div className="relative mt-5">
-        <div className="mb-1.5 flex items-center justify-between text-xs">
-          <span className="text-slate-500">
-            {lessonsDone}/{lessonsTotal} уроков
-          </span>
-          <span className="font-semibold" style={{ color }}>
-            {progress}%
-          </span>
-        </div>
-        <ProgressBar value={progress} from={color} delay={0.15 + index * 0.08} />
-      </div>
+      {/* Прогресс на карточке не показываем — он доступен внутри курса */}
+      {isComingSoon && (
+        <p className="relative mt-5 text-xs text-slate-500">
+          Задания готовятся — курс появится в ближайшем обновлении.
+        </p>
+      )}
 
       {/* XP + кнопка действия */}
       <div className="relative mt-5 flex items-center justify-between gap-3 border-t border-slate-800/80 pt-4">
@@ -94,7 +99,10 @@ export default function LanguageCard({ language, index = 0 }: LanguageCardProps)
 
         <button
           type="button"
-          className="neon-btn inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold text-white"
+          onClick={() => onStart(id)}
+          disabled={isCompleted}
+          aria-label={`${actionLabel}: ${name}`}
+          className="neon-btn inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           style={{
             borderColor: `${color}80`,
             backgroundColor: `${color}14`,
@@ -102,8 +110,10 @@ export default function LanguageCard({ language, index = 0 }: LanguageCardProps)
             ['--glow-rgb' as string]: colorRGB,
           }}
         >
-          {isStarted ? 'Продолжить' : 'Начать курс'}
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          {actionLabel}
+          {!isComingSoon && (
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          )}
         </button>
       </div>
     </motion.article>

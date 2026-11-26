@@ -1,7 +1,24 @@
 import type { LucideIcon } from 'lucide-react';
 
 /** Идентификаторы вкладок-фильтров */
-export type FilterId = 'all' | 'frontend' | 'backend' | 'popular';
+export type FilterId = 'all' | 'frontend' | 'backend' | 'popular' | 'new';
+
+/** Разделы приложения, доступные из меню */
+export type SectionId = 'trainer' | 'tasks' | 'rating' | 'roadmap';
+
+/** Пункт навигации */
+export interface NavLink {
+  id: SectionId;
+  label: string;
+}
+
+/** Строка таблицы лидеров */
+export interface LeaderRow {
+  name: string;
+  xp: number;
+  level: number;
+  streakDays: number;
+}
 
 /** Вкладка фильтра (лейбл + количество совпадений считается из данных) */
 export interface FilterTab {
@@ -31,6 +48,33 @@ export interface Language {
   xpReward: number;
   /** К каким фильтрам относится курс */
   categories: FilterId[];
+}
+
+/** Одно правило проверки кода задания */
+export interface LessonCheck {
+  /** Короткий текст для чек-листа */
+  label: string;
+  /** Конструкция, которая должна быть в коде */
+  pattern: RegExp;
+  /** Что не так, если правило не выполнено */
+  message: string;
+}
+
+/** Задание внутри курса */
+export interface Lesson {
+  id: string;
+  /** Короткое название урока */
+  title: string;
+  /** Что нужно сделать — постановка задачи */
+  goal: string;
+  /** Правила, которым должен соответствовать код */
+  checks: LessonCheck[];
+  /** Заготовка кода в редакторе */
+  starter: string;
+  /** Эталонное решение для кнопки «Показать решение» */
+  solution: string;
+  /** Подсказка, если решение не идёт */
+  hint: string;
 }
 
 /** Данные авторизованного пользователя (мок) */

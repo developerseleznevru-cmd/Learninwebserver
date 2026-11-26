@@ -1,15 +1,22 @@
 import type { CSSProperties } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Flame, Target, Zap } from 'lucide-react';
+import { Clock, Flame, LogIn, Target, Zap } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
 import { currentUser } from '../data/mockData';
 import ProgressBar from './ProgressBar';
 
+interface HeroProps {
+  onLoginClick: () => void;
+}
+
 /**
  * Hero-секция: приветствие + мини-виджет дневного прогресса.
+ * Для гостя вместо статистики показывается вход и регистрация.
  * Адаптив: на десктопе две колонки, на мобильном — одна.
  */
-export default function Hero() {
-  const { name, dailyDone, dailyGoal, level, rank, streakDays } = currentUser;
+export default function Hero({ onLoginClick }: HeroProps) {
+  const { user } = useAuth();
+  const { dailyDone, dailyGoal, level, rank, streakDays } = currentUser;
   const percent = Math.round((dailyDone / dailyGoal) * 100);
   const left = dailyGoal - dailyDone;
 
@@ -22,36 +29,69 @@ export default function Hero() {
     >
       {/* Приветствие */}
       <div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-cyan-300 uppercase">
-          <span className="blink-dot h-1.5 w-1.5 rounded-full bg-cyan-300 text-cyan-300" />
-          Уровень {level} · {rank}
-        </span>
+        {user && (
+          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-cyan-300 uppercase">
+            <span className="blink-dot h-1.5 w-1.5 rounded-full bg-cyan-300 text-cyan-300" />
+            Уровень {level} · {rank}
+          </span>
+        )}
 
         <h1 className="mt-5 font-display text-3xl leading-tight font-bold text-white sm:text-4xl lg:text-5xl">
-          С возвращением,{' '}
-          <span className="bg-gradient-to-r from-cyan-300 via-white to-fuchsia-300 bg-clip-text text-transparent [filter:drop-shadow(0_0_22px_rgba(0,210,255,0.35))]">
-            {name.split(' ')[0]}
-          </span>
-          !<br className="hidden sm:block" /> Готов покорять код сегодня?
+          {user ? (
+            <>
+              С возвращением,{' '}
+              <span className="bg-gradient-to-r from-cyan-300 via-white to-fuchsia-300 bg-clip-text text-transparent [filter:drop-shadow(0_0_22px_rgba(0,210,255,0.35))]">
+                {user.name.split(' ')[0]}
+              </span>
+              !<br className="hidden sm:block" /> Готов покорять код сегодня?
+            </>
+          ) : (
+            <>
+              Прокачай навыки кода{' '}
+              <span className="bg-gradient-to-r from-cyan-300 via-white to-fuchsia-300 bg-clip-text text-transparent [filter:drop-shadow(0_0_22px_rgba(0,210,255,0.35))]">
+                с первого урока
+              </span>
+            </>
+          )}
         </h1>
 
         <p className="mt-4 max-w-xl text-base text-slate-400">
-          Твой ежедневный спринт ждёт: прокачай навыки, забери XP и продолжи стрик{' '}
-          <span className="font-semibold text-orange-300">{streakDays} дней</span> без остановки.
+          {user ? (
+            <>
+              Твой ежедневный спринт ждёт: прокачай навыки, забери XP и продолжи стрик{' '}
+              <span className="font-semibold text-orange-300">{streakDays} дней</span> без остановки.
+            </>
+          ) : (
+            <>Выбери курс, решай задания с автопроверкой и следи за прогрессом. Аккаунт нужен, чтобы вернуться к своим урокам.</>
+          )}
         </p>
 
-        {/* Быстрые метрики */}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <span className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-slate-300">
-            <Flame className="h-4 w-4 text-orange-400" /> Стрик {streakDays} дней
-          </span>
-          <span className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-slate-300">
-            <Zap className="h-4 w-4 text-fuchsia-400" />{' '}
-            {currentUser.xp.toLocaleString('ru-RU')} XP
-          </span>
-          <span className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-slate-300">
-            <Clock className="h-4 w-4 text-cyan-400" /> ~15 мин до цели
-          </span>
+        {/* Быстрые метрики или призыв войти */}
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {user ? (
+            <>
+              <span className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-slate-300">
+                <Flame className="h-4 w-4 text-orange-400" /> Стрик {streakDays} дней
+              </span>
+              <span className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-slate-300">
+                <Zap className="h-4 w-4 text-fuchsia-400" />{' '}
+                {currentUser.xp.toLocaleString('ru-RU')} XP
+              </span>
+              <span className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-slate-300">
+                <Clock className="h-4 w-4 text-cyan-400" /> ~15 мин до цели
+              </span>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onLoginClick}
+              className="neon-btn inline-flex items-center gap-2 rounded-lg border border-cyan-400/60 bg-cyan-400/10 px-4 py-2.5 text-sm font-semibold text-cyan-200"
+              style={{ ['--glow-rgb' as string]: '0,210,255' }}
+            >
+              <LogIn className="h-4 w-4" />
+              Войти или зарегистрироваться
+            </button>
+          )}
         </div>
       </div>
 
@@ -63,51 +103,73 @@ export default function Hero() {
         style={{ '--glow-rgb': '0,210,255' } as CSSProperties}
         className="neon-card rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-md"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-400/40 bg-cyan-400/10 text-cyan-300 shadow-[0_0_18px_rgba(0,210,255,0.3)]">
-              <Target className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="font-display text-base font-semibold text-white">Дневная норма</h2>
-              <p className="text-xs text-slate-500">Обнуляется в 00:00</p>
+        {user ? (
+          <>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-400/40 bg-cyan-400/10 text-cyan-300 shadow-[0_0_18px_rgba(0,210,255,0.3)]">
+                  <Target className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="font-display text-base font-semibold text-white">Дневная норма</h2>
+                  <p className="text-xs text-slate-500">Обнуляется в 00:00</p>
+                </div>
+              </div>
+              <span className="rounded-full border border-lime-400/30 bg-lime-400/10 px-2.5 py-1 text-xs font-semibold text-lime-300 [text-shadow:0_0_10px_rgba(0,255,136,0.5)]">
+                +50 XP
+              </span>
             </div>
+
+            {/* Счётчик уроков */}
+            <div className="mt-6 flex items-end gap-2">
+              <span className="font-display text-4xl font-bold text-white">
+                {dailyDone}
+                <span className="text-slate-600">/{dailyGoal}</span>
+              </span>
+              <span className="pb-1.5 text-sm text-slate-400">уроков пройдено</span>
+            </div>
+
+            <ProgressBar
+              value={percent}
+              from="#00D2FF"
+              to="#BD00FF"
+              delay={0.35}
+              className="mt-4 h-2.5"
+            />
+
+            <p className="mt-3 text-sm text-slate-400">
+              {left > 0 ? (
+                <>
+                  Осталось{' '}
+                  <span className="font-semibold text-cyan-300 [text-shadow:0_0_10px_rgba(0,210,255,0.6)]">
+                    {left} {left === 1 ? 'урок' : left < 5 ? 'урока' : 'уроков'}
+                  </span>{' '}
+                  до выполнения цели
+                </>
+              ) : (
+                <span className="font-semibold text-lime-300">Цель выполнена — отличная работа! 🔥</span>
+              )}
+            </p>
+          </>
+        ) : (
+          <div className="text-center">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-fuchsia-400/40 bg-fuchsia-400/10 text-fuchsia-300">
+              <Zap className="h-6 w-6" />
+            </span>
+            <h2 className="mt-4 font-display text-lg font-semibold text-white">Прогресс под защитой</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Войди, чтобы сохранить пройденные уроки и продолжить с любого устройства.
+            </p>
+            <button
+              type="button"
+              onClick={onLoginClick}
+              className="neon-btn mt-5 w-full rounded-xl border border-fuchsia-500/50 bg-fuchsia-500/10 px-4 py-2.5 text-sm font-semibold text-fuchsia-300 hover:bg-fuchsia-500/20"
+              style={{ ['--glow-rgb' as string]: '189,0,255' }}
+            >
+              Создать аккаунт
+            </button>
           </div>
-          <span className="rounded-full border border-lime-400/30 bg-lime-400/10 px-2.5 py-1 text-xs font-semibold text-lime-300 [text-shadow:0_0_10px_rgba(0,255,136,0.5)]">
-            +50 XP
-          </span>
-        </div>
-
-        {/* Счётчик уроков */}
-        <div className="mt-6 flex items-end gap-2">
-          <span className="font-display text-4xl font-bold text-white">
-            {dailyDone}
-            <span className="text-slate-600">/{dailyGoal}</span>
-          </span>
-          <span className="pb-1.5 text-sm text-slate-400">уроков пройдено</span>
-        </div>
-
-        <ProgressBar
-          value={percent}
-          from="#00D2FF"
-          to="#BD00FF"
-          delay={0.35}
-          className="mt-4 h-2.5"
-        />
-
-        <p className="mt-3 text-sm text-slate-400">
-          {left > 0 ? (
-            <>
-              Осталось{' '}
-              <span className="font-semibold text-cyan-300 [text-shadow:0_0_10px_rgba(0,210,255,0.6)]">
-                {left} {left === 1 ? 'урок' : left < 5 ? 'урока' : 'уроков'}
-              </span>{' '}
-              до выполнения цели
-            </>
-          ) : (
-            <span className="font-semibold text-lime-300">Цель выполнена — отличная работа! 🔥</span>
-          )}
-        </p>
+        )}
       </motion.div>
     </motion.section>
   );
