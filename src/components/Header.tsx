@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Flame, LogIn, LogOut, Menu, X, Zap } from 'lucide-react';
+import { Flame, LogIn, LogOut, Menu, Search, X, Zap } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { currentUser, navLinks } from '../data/mockData';
 import type { SectionId } from '../types';
@@ -9,6 +9,55 @@ interface HeaderProps {
   activeSection: SectionId;
   onNavigate: (id: SectionId) => void;
   onLoginClick: () => void;
+  /** Поисковый запрос по курсам (поднят в App для фильтрации каталога) */
+  query: string;
+  onQueryChange: (value: string) => void;
+  /** Отправка формы поиска: переход к каталогу курсов */
+  onSearchSubmit: () => void;
+}
+
+interface SearchFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  className?: string;
+}
+
+/**
+ * Поисковая строка: инпут + кнопка «Найти».
+ * Enter или кнопка вызывают onSubmit; ввод — живая фильтрация каталога.
+ */
+function SearchField({ value, onChange, onSubmit, className = '' }: SearchFieldProps) {
+  return (
+    <form
+      role="search"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+      className={`flex items-center gap-2 ${className}`}
+    >
+      <div className="relative min-w-0 flex-1">
+        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <input
+          type="search"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="Поиск курса…"
+          aria-label="Поиск курса"
+          className="w-full rounded-lg border border-slate-800 bg-slate-900/60 py-2 pr-3 pl-9 text-sm text-slate-200 transition-colors outline-none placeholder:text-slate-500 focus:border-cyan-400/60 focus:shadow-[0_0_14px_rgba(0,210,255,0.25)]"
+        />
+      </div>
+      <button
+        type="submit"
+        className="neon-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-400/60 bg-cyan-400/10 px-3 py-2 text-sm font-semibold text-cyan-200"
+        style={{ ['--glow-rgb' as string]: '0,210,255' }}
+      >
+        <Search className="h-4 w-4" />
+        Найти
+      </button>
+    </form>
+  );
 }
 
 /**
@@ -16,7 +65,14 @@ interface HeaderProps {
  * (стрик 🔥, XP ⚡, аватар с неоновой рамкой или кнопка «Войти»).
  * На мобильных пункты меню прячутся за «гамбургер».
  */
-export default function Header({ activeSection, onNavigate, onLoginClick }: HeaderProps) {
+export default function Header({
+  activeSection,
+  onNavigate,
+  onLoginClick,
+  query,
+  onQueryChange,
+  onSearchSubmit,
+}: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -39,7 +95,7 @@ export default function Header({ activeSection, onNavigate, onLoginClick }: Head
           </span>
         </button>
 
-        {/* Навигация (desktop) */}
+        {/* Навигация (desktop) — без изменений */}
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Основная навигация">
           {navLinks.map((link) => {
             const isActive = link.id === activeSection;
@@ -66,6 +122,16 @@ export default function Header({ activeSection, onNavigate, onLoginClick }: Head
             );
           })}
         </nav>
+
+        {/* Поиск курса: между меню и блоком профиля / «Войти» (desktop) */}
+        <div className="hidden shrink-0 items-center md:flex">
+          <SearchField
+            value={query}
+            onChange={onQueryChange}
+            onSubmit={onSearchSubmit}
+            className="w-64 md:w-72 lg:w-80 xl:w-96"
+          />
+        </div>
 
         {/* Профиль (desktop) */}
         <div className="hidden items-center gap-3 lg:flex">
@@ -190,6 +256,17 @@ export default function Header({ activeSection, onNavigate, onLoginClick }: Head
             aria-label="Мобильная навигация"
           >
             <div className="space-y-1 px-4 py-3">
+              {/* Поиск курса на мобильных — в верху выпадающего меню */}
+              <div className="pb-2">
+                <SearchField
+                  value={query}
+                  onChange={onQueryChange}
+                  onSubmit={() => {
+                    onSearchSubmit();
+                    setMenuOpen(false);
+                  }}
+                />
+              </div>
               {navLinks.map((link) => (
                 <button
                   key={link.id}
